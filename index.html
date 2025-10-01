@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciFiStories1977 - Command Center</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000000;
+            color: #00ff88;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.9);
+            pointer-events: none;
+            z-index: 9998;
+        }
+        
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 136, 0.03) 2px,
+                rgba(0, 255, 136, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.5;
+        }
+        
+        .stars-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .grid-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+        }
+        
+        .grid-bg {
+            position: absolute;
+            bottom: -50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            transform: translateX(-50%) perspective(600px) rotateX(75deg);
+            transform-origin: center bottom;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.2) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.2) 2px, transparent 2px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateX(-50%) perspective(600px) rotateX(75deg) translateY(0); }
+            100% { transform: translateX(-50%) perspective(600px) rotateX(75deg) translateY(60px); }
+        }
+        
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+        }
+        
+        header {
+            text-align: center;
+            padding: 80px 20px 60px;
+            position: relative;
+        }
+
+        .logo-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 12px;
+            background: linear-gradient(180deg, #00ff88 0%, #00aa55 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.8))
+                    drop-shadow(0 0 40px rgba(0, 255, 136, 0.4));
+            margin-bottom: 20px;
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { 
+                filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.8))
+                        drop-shadow(0 0 40px rgba(0, 255, 136, 0.4));
+            }
+            50% { 
+                filter: drop-shadow(0 0 30px rgba(0, 255, 136, 1))
+                        drop-shadow(0 0 60px rgba(0, 255, 136, 0.6));
+            }
+        }
+        
+        .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: #00dd77;
+            letter-spacing: 8px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .subtitle::before,
+        .subtitle::after {
+            content: '◆';
+            margin: 0 20px;
+            color: #ffaa00;
+        }
+        
+        .terminal-line {
+            color: #00ff88;
+            font-size: 1rem;
+            margin: 5px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .terminal-line:nth-child(1) { animation-delay: 0.3s; }
+        .terminal-line:nth-child(2) { animation-delay: 0.6s; }
+        .terminal-line:nth-child(3) { animation-delay: 0.9s; }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background: #00ff88;
+            margin-left: 5px;
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+        }
+        
+        .section {
+            background: linear-gradient(135deg, rgba(0, 30, 20, 0.9) 0%, rgba(0, 20, 15, 0.9) 100%);
+            border: 3px solid #00ff88;
+            border-radius: 8px;
+            padding: 50px 40px;
+            margin-bottom: 60px;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 136, 0.3),
+                inset 0 0 40px rgba(0, 255, 136, 0.05);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                #ffaa00 20%, 
+                #00ff88 50%, 
+                #ffaa00 80%, 
+                transparent 100%);
+        }
+
+        .section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(0, 255, 136, 0.1), 
+                transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .section-title::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: #ffaa00;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+        
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .link-card {
+            background: linear-gradient(135deg, rgba(0, 20, 15, 0.8) 0%, rgba(0, 10, 8, 0.9) 100%);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 35px 30px;
+            text-decoration: none;
+            color: #00ff88;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(0, 255, 136, 0) 0%, 
+                rgba(0, 255, 136, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 60px rgba(0, 255, 136, 0.4),
+                inset 0 0 40px rgba(0, 255, 136, 0.15);
+            border-color: #ffaa00;
+        }
+
+        .link-card:hover::before {
+            opacity: 1;
+        }
+        
+        .link-card:hover .link-title {
+            color: #ffaa00;
+            text-shadow: 0 0 20px rgba(255, 170, 0, 0.8);
+        }
+
+        .link-card:hover .link-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .link-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.6));
+            transition: transform 0.4s ease;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .link-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 2px;
+        }
+        
+        .link-desc {
+            font-size: 1rem;
+            color: #00aa66;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .project-card {
+            background: linear-gradient(135deg, rgba(0, 20, 15, 0.8) 0%, rgba(0, 10, 8, 0.9) 100%);
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            padding: 30px 25px;
+            text-decoration: none;
+            color: #00ff88;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::after {
+            content: '→';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #ffaa00;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateX(10px) scale(1.03);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.4);
+            border-color: #ffaa00;
+        }
+
+        .project-card:hover::after {
+            opacity: 1;
+            right: 25px;
+        }
+        
+        .project-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: #ffaa00;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: #00aa66;
+            position: relative;
+            border-top: 2px solid rgba(0, 255, 136, 0.3);
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 30, 20, 0.5) 100%);
+        }
+        
+        .footer-text {
+            font-size: 1rem;
+            letter-spacing: 3px;
+            line-height: 1.8;
+        }
+
+        .footer-text strong {
+            color: #00ff88;
+        }
+        
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.8rem;
+                letter-spacing: 6px;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+                letter-spacing: 4px;
+            }
+
+            .subtitle::before,
+            .subtitle::after {
+                margin: 0 10px;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+                letter-spacing: 3px;
+            }
+            
+            .section {
+                padding: 30px 20px;
+            }
+            
+            .links-grid,
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+    <canvas class="stars-canvas" id="starsCanvas"></canvas>
+    
+    <div class="grid-container">
+        <div class="grid-bg"></div>
+    </div>
+    
+    <div class="content-wrapper">
+        <header>
+            <div class="logo-container">
+                <div class="logo">SCIFISTORIES1977</div>
+            </div>
+            <div class="subtitle">COMMAND CENTER</div>
+            <div class="terminal-wrapper">
+                <div class="terminal-line">> INITIALIZING SYSTEMS...</div>
+                <div class="terminal-line">> LOADING NAVIGATION DATABASE...</div>
+                <div class="terminal-line">> ALL SYSTEMS OPERATIONAL<span class="cursor"></span></div>
+            </div>
+        </header>
+        
+        <div class="container">
+            <section class="section">
+                <h2 class="section-title">Content Channels</h2>
+                <div class="links-grid">
+                    <a href="https://www.youtube.com/@scifistories1977" class="link-card" target="_blank" rel="noopener">
+                        <div class="link-icon">📺</div>
+                        <div class="link-title">YOUTUBE</div>
+                        <div class="link-desc">Explore sci-fi stories, narratives, and immersive content from the channel</div>
+                    </a>
+                    
+                    <a href="https://www.patreon.com/c/scifistories1977" class="link-card" target="_blank" rel="noopener">
+                        <div class="link-icon">🎯</div>
+                        <div class="link-title">PATREON</div>
+                        <div class="link-desc">Support the mission and access exclusive behind-the-scenes content</div>
+                    </a>
+                    
+                    <a href="https://www.reddit.com/user/SciFiStories1977/" class="link-card" target="_blank" rel="noopener">
+                        <div class="link-icon">💬</div>
+                        <div class="link-title">REDDIT</div>
+                        <div class="link-desc">Join community discussions and share your thoughts on sci-fi</div>
+                    </a>
+                    
+                    <a href="https://twitter.com/scifistories1977" class="link-card" target="_blank" rel="noopener">
+                        <div class="link-icon">🐦</div>
+                        <div class="link-title">TWITTER</div>
+                        <div class="link-desc">Get real-time updates, insights, and quick sci-fi thoughts</div>
+                    </a>
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2 class="section-title">Projects & Experiences</h2>
+                <div class="projects-grid">
+                    <a href="https://seekr.run" class="project-card" target="_blank" rel="noopener">
+                        <div class="project-title">SEEKR.RUN</div>
+                        <div class="link-desc">Interactive digital experience</div>
+                    </a>
+                    
+                    <a href="https://wargames1980s.online" class="project-card" target="_blank" rel="noopener">
+                        <div class="project-title">WARGAMES1980s</div>
+                        <div class="link-desc">Classic 1980s simulation tribute</div>
+                    </a>
+                    
+                    <a href="#" class="project-card">
+                        <div class="project-title">SKIRMISH</div>
+                        <div class="link-desc">Command & Conquer inspired strategy</div>
+                    </a>
+                    
+                    <a href="#" class="project-card">
+                        <div class="project-title">APPAREL SHOP</div>
+                        <div class="link-desc">Official merchandise collection</div>
+                    </a>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <div class="footer-text">
+                <strong>SCIFISTORIES1977.COM</strong><br>
+                EST. 1977 — TRANSMITTING FROM THE FUTURE<br>
+                > READY FOR NEXT COMMAND_
+            </div>
+        </footer>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('starsCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const stars = [];
+        const starCount = 200;
+        
+        for (let i = 0; i < starCount; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.5,
+                alpha: Math.random(),
+                twinkleSpeed: Math.random() * 0.02 + 0.01,
+                direction: Math.random() > 0.5 ? 1 : -1
+            });
+        }
+        
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 255, 136, ${star.alpha})`;
+                ctx.fill();
+                
+                star.alpha += star.twinkleSpeed * star.direction;
+                
+                if (star.alpha <= 0.1 || star.alpha >= 0.9) {
+                    star.direction *= -1;
+                }
+            });
+            
+            requestAnimationFrame(drawStars);
+        }
+        
+        drawStars();
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
