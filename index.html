@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+wwwwwwww<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -120,20 +120,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+        const renderer = new THREE.WebGLRenderer({ antialias: false });
         
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        
+        // Pixelated retro effect
+        const pixelRatio = 0.35;
+        renderer.setSize(window.innerWidth * pixelRatio, window.innerHeight * pixelRatio, false);
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+        renderer.domElement.style.imageRendering = 'pixelated';
+        
         document.getElementById('canvas-container').appendChild(renderer.domElement);
         
-        scene.fog = new THREE.FogExp2(0x9db4c0, 0.012);
+        scene.fog = new THREE.Fog(0x9db4c0, 80, 400);
         
         let player = {
-            position: new THREE.Vector3(0, 5, 0),
+            position: new THREE.Vector3(-20, 5, 30),
             velocity: new THREE.Vector3(0, 0, 0),
-            rotation: { x: 0, y: 0 },
+            rotation: { x: 0, y: -Math.PI / 4 },
             speed: 0.15,
             sprintMultiplier: 2,
             jumpForce: 0.3,
@@ -178,71 +186,48 @@
         }
         
         function createGround() {
-            const groundSize = 200;
+            const groundSize = 300;
             const baseGround = createVoxel(groundSize, 1, groundSize, 0x3d5a42, 0, -0.5, 0, true, false);
             scene.add(baseGround);
             
             const topGround = createVoxel(groundSize, 0.5, groundSize, 0x4a6b52, 0, 0.25, 0, true, false);
             scene.add(topGround);
             
+            // Coastal beach area with sand
+            const sandColors = [0xc2b280, 0xd2c290, 0xb2a270];
+            for (let i = 0; i < 150; i++) {
+                const size = Math.random() * 2 + 0.5;
+                const x = (Math.random() - 0.5) * 60 - 20;
+                const z = (Math.random() - 0.5) * 40 + 20;
+                const color = sandColors[Math.floor(Math.random() * sandColors.length)];
+                const sand = createVoxel(size, 0.3, size, color, x, 0.4, z);
+                scene.add(sand);
+            }
+            
+            // Grass in the distance and sides
             const grassColors = [0x4a7c59, 0x5a8c69, 0x4d7a5c, 0x567f62];
-            for (let i = 0; i < 200; i++) {
+            for (let i = 0; i < 300; i++) {
                 const size = Math.random() * 1.5 + 0.5;
                 const x = (Math.random() - 0.5) * groundSize * 0.9;
                 const z = (Math.random() - 0.5) * groundSize * 0.9;
-                const color = grassColors[Math.floor(Math.random() * grassColors.length)];
-                const grassPatch = createVoxel(size, 0.3, size, color, x, 0.4, z);
-                scene.add(grassPatch);
-            }
-            
-            for (let i = 0; i < 150; i++) {
-                const size = Math.random() * 0.3 + 0.1;
-                const x = (Math.random() - 0.5) * groundSize * 0.9;
-                const z = (Math.random() - 0.5) * groundSize * 0.9;
-                const detail = createVoxel(size, 0.8, size, 0x5a9c79, x, 0.6, z);
-                scene.add(detail);
-            }
-            
-            const pathPoints = [
-                [0, 0], [3, -2], [6, -3], [10, -5], [14, -8], 
-                [18, -11], [22, -15], [26, -19], [29, -23], [31, -27]
-            ];
-            
-            const pathColors = [0x8b7355, 0x7b6345, 0x9b8365, 0x6b5335];
-            const stainColors = [0x6d4c41, 0x5d3c31, 0x7d5c51, 0x4d2c21];
-            
-            for (let i = 0; i < pathPoints.length - 1; i++) {
-                const [x1, z1] = pathPoints[i];
-                const [x2, z2] = pathPoints[i + 1];
-                const segments = 8;
                 
-                for (let j = 0; j <= segments; j++) {
-                    const t = j / segments;
-                    const x = x1 + (x2 - x1) * t;
-                    const z = z1 + (z2 - z1) * t;
-                    
-                    for (let k = 0; k < 3; k++) {
-                        const offset = (Math.random() - 0.5) * 1.5;
-                        const width = 2.5 + Math.random() * 0.8;
-                        const color = pathColors[Math.floor(Math.random() * pathColors.length)];
-                        const path = createVoxel(width, 0.2, width, color, x + offset, 0.15, z + offset);
-                        scene.add(path);
-                    }
-                    
-                    if (Math.random() > 0.6) {
-                        for (let s = 0; s < 2; s++) {
-                            const stainSize = Math.random() * 1.2 + 0.5;
-                            const stainColor = stainColors[Math.floor(Math.random() * stainColors.length)];
-                            const stain = createVoxel(
-                                stainSize, 0.15, stainSize, 
-                                stainColor, 
-                                x + (Math.random() - 0.5) * 2, 0.2, 
-                                z + (Math.random() - 0.5) * 2
-                            );
-                            scene.add(stain);
-                        }
-                    }
+                // Skip bay area
+                if (z < 15 || z > 50 || x < -50 || x > 30) {
+                    const color = grassColors[Math.floor(Math.random() * grassColors.length)];
+                    const grassPatch = createVoxel(size, 0.3, size, color, x, 0.4, z);
+                    scene.add(grassPatch);
                 }
+            }
+            
+            // Rocky shoreline details
+            const rockColors = [0x6a6a5a, 0x7a7a6a, 0x5a5a4a];
+            for (let i = 0; i < 50; i++) {
+                const size = Math.random() * 1.5 + 0.5;
+                const x = (Math.random() - 0.5) * 60 - 20;
+                const z = Math.random() * 10 + 10;
+                const color = rockColors[Math.floor(Math.random() * rockColors.length)];
+                const rock = createVoxel(size, size * 0.8, size, color, x, 0.5, z);
+                scene.add(rock);
             }
         }
         
@@ -378,19 +363,70 @@
             });
         }
         
-        function createSignpost(x, z) {
-            const post = createVoxel(0.4, 3.5, 0.4, 0x4a3728, x, 1.75, z);
-            scene.add(post);
+        // Create a sailing ship
+        function createShip(x, z) {
+            // Hull - main body
+            const hullColors = [0x4a3728, 0x5a4738, 0x3a2718];
             
-            const sign = createVoxel(2.5, 0.9, 0.25, 0x8b6f47, x, 2.8, z);
-            scene.add(sign);
+            // Bottom hull
+            for (let i = 0; i < 3; i++) {
+                const width = 8 - i * 1.5;
+                const hull = createVoxel(width, 2, 12, hullColors[i % 3], x, 1.5 + i * 2, z);
+                scene.add(hull);
+            }
+            
+            // Deck
+            const deck = createVoxel(7, 0.5, 11, 0x8b7355, x, 7.5, z);
+            scene.add(deck);
+            
+            // Cabin
+            const cabin = createVoxel(5, 3, 6, 0x6a5a4a, x, 9.5, z - 2);
+            scene.add(cabin);
+            
+            const cabinRoof = createVoxel(5.5, 0.8, 6.5, 0x5a4a3a, x, 11.5, z - 2);
+            scene.add(cabinRoof);
+            
+            // Masts
+            const mainMast = createVoxel(0.6, 18, 0.6, 0x4a3728, x, 17, z);
+            scene.add(mainMast);
+            
+            const frontMast = createVoxel(0.5, 14, 0.5, 0x4a3728, x, 14, z + 4);
+            scene.add(frontMast);
+            
+            // Sails - white/cream colored
+            const sailColor = 0xf5f5dc;
+            
+            // Main sail
+            const mainSail = createVoxel(8, 10, 0.3, sailColor, x, 17, z);
+            scene.add(mainSail);
+            
+            // Front sail
+            const frontSail = createVoxel(6, 8, 0.3, sailColor, x, 14, z + 4);
+            scene.add(frontSail);
+            
+            // Bow (front point)
+            const bow = createVoxel(2, 3, 3, 0x4a3728, x, 3, z + 7);
+            scene.add(bow);
+            
+            // Add some details - railings
+            for (let i = -5; i <= 5; i += 2) {
+                const railing = createVoxel(0.3, 0.8, 0.3, 0x3a2718, x + 3.5, 8, z + i);
+                const railing2 = createVoxel(0.3, 0.8, 0.3, 0x3a2718, x - 3.5, 8, z + i);
+                scene.add(railing);
+                scene.add(railing2);
+            }
+            
+            // Flags on masts
+            const flag = createVoxel(2, 1.5, 0.2, 0xff4444, x + 1, 25, z);
+            scene.add(flag);
         }
         
         function createCastle(x, z) {
+            // Large multi-level foundation
             const foundationLayers = [
-                {size: 24, height: 2, color: 0x5a4e3f, y: 1},
-                {size: 22, height: 1.5, color: 0x6a5e4f, y: 2.5},
-                {size: 20, height: 1, color: 0x7a6e5f, y: 3.5}
+                {size: 28, height: 3, color: 0x5a4e3f, y: 1.5},
+                {size: 26, height: 2, color: 0x6a5e4f, y: 3.5},
+                {size: 24, height: 1.5, color: 0x7a6e5f, y: 5}
             ];
             
             foundationLayers.forEach(layer => {
@@ -398,67 +434,142 @@
                 scene.add(base);
             });
             
-            for (let i = 0; i < 12; i++) {
+            // Main keep - taller and more detailed
+            const keepWidth = 18;
+            const keepLayers = 20;
+            for (let i = 0; i < keepLayers; i++) {
                 const keepColor = i % 2 === 0 ? 0x7a6e5f : 0x6a5e4f;
-                const keep = createVoxel(16, 2.5, 16, keepColor, x, 5 + i * 2.5, z);
+                const keep = createVoxel(keepWidth, 2, keepWidth, keepColor, x, 7 + i * 2, z);
                 scene.add(keep);
             }
             
-            const towerPositions = [[-7, -7], [7, -7], [-7, 7], [7, 7]];
+            // Battlements on main keep
+            for (let bx = -8; bx <= 8; bx += 4) {
+                for (let bz = -8; bz <= 8; bz += 4) {
+                    if (Math.abs(bx) === 8 || Math.abs(bz) === 8) {
+                        const battlement = createVoxel(1.5, 2, 1.5, 0x5a4e3f, x + bx, 48, z + bz);
+                        scene.add(battlement);
+                    }
+                }
+            }
+            
+            // Four corner towers - very tall
+            const towerPositions = [[-9, -9], [9, -9], [-9, 9], [9, 9]];
             towerPositions.forEach(([ox, oz]) => {
-                for (let i = 0; i < 15; i++) {
+                // Tower body
+                for (let i = 0; i < 20; i++) {
                     const towerColor = i % 2 === 0 ? 0x8a7e6f : 0x7a6e5f;
-                    const tower = createVoxel(4.5, 2.5, 4.5, towerColor, x + ox, 5 + i * 2.5, z + oz);
+                    const tower = createVoxel(5, 2.5, 5, towerColor, x + ox, 7 + i * 2.5, z + oz);
                     scene.add(tower);
                 }
                 
-                const top = createVoxel(5.5, 2, 5.5, 0x6a5e4f, x + ox, 42, z + oz);
-                scene.add(top);
+                // Tower cap
+                const cap = createVoxel(6, 2.5, 6, 0x6a5e4f, x + ox, 58, z + oz);
+                scene.add(cap);
                 
-                for (let s = 0; s < 3; s++) {
-                    const spireSize = 1.2 - s * 0.3;
-                    const spire = createVoxel(spireSize, 1.5, spireSize, 0x9a8e7f, x + ox, 44 + s * 1.5, z + oz);
+                // Detailed battlements
+                for (let b = 0; b < 8; b++) {
+                    const angle = (b / 8) * Math.PI * 2;
+                    const bx = ox + Math.cos(angle) * 2.5;
+                    const bz = oz + Math.sin(angle) * 2.5;
+                    const battlement = createVoxel(0.8, 1.8, 0.8, 0x5a4e3f, x + bx, 60, z + bz);
+                    scene.add(battlement);
+                }
+                
+                // Tall spires
+                for (let s = 0; s < 5; s++) {
+                    const spireSize = 1.5 - s * 0.2;
+                    const spire = createVoxel(spireSize, 2, spireSize, 0x9a8e7f, x + ox, 61 + s * 2, z + oz);
                     scene.add(spire);
                 }
             });
             
-            for (let i = 0; i < 8; i++) {
-                const spireSize = 2.5 - i * 0.2;
-                const mainSpire = createVoxel(spireSize, 2, spireSize, 0x8a7e6f, x, 36 + i * 2, z);
+            // Central main spire - extremely tall
+            for (let i = 0; i < 12; i++) {
+                const spireSize = 3 - i * 0.15;
+                const spireColor = i % 2 === 0 ? 0x8a7e6f : 0x7a6e5f;
+                const mainSpire = createVoxel(spireSize, 2.5, spireSize, spireColor, x, 48 + i * 2.5, z);
                 scene.add(mainSpire);
             }
             
-            const crossV = createVoxel(0.6, 4, 0.6, 0x6a5e4f, x, 54, z);
-            const crossH = createVoxel(2.5, 0.6, 0.6, 0x6a5e4f, x, 53, z);
+            // Spire top
+            for (let i = 0; i < 3; i++) {
+                const topSize = 2 - i * 0.5;
+                const top = createVoxel(topSize, 2, topSize, 0x9a8e7f, x, 78 + i * 2, z);
+                scene.add(top);
+            }
+            
+            // Large cross at top
+            const crossV = createVoxel(0.8, 6, 0.8, 0x6a5e4f, x, 87, z);
+            const crossH = createVoxel(3.5, 0.8, 0.8, 0x6a5e4f, x, 85, z);
             scene.add(crossV);
             scene.add(crossH);
             
-            const windowGrid = [
-                [-6, 15, -8.1], [0, 15, -8.1], [6, 15, -8.1],
-                [-6, 20, -8.1], [0, 20, -8.1], [6, 20, -8.1],
-                [-6, 25, -8.1], [0, 25, -8.1], [6, 25, -8.1],
-                [-8.1, 15, 0], [-8.1, 20, 0], [8.1, 15, 0], [8.1, 20, 0]
-            ];
+            // Many lit windows in a grid pattern
+            const windowGrid = [];
+            
+            // Front face windows
+            for (let floor = 0; floor < 8; floor++) {
+                for (let col = -6; col <= 6; col += 3) {
+                    windowGrid.push([col, 12 + floor * 5, -9.1]);
+                }
+            }
+            
+            // Side faces
+            for (let floor = 0; floor < 8; floor++) {
+                windowGrid.push([-9.1, 12 + floor * 5, 0]);
+                windowGrid.push([9.1, 12 + floor * 5, 0]);
+                windowGrid.push([-9.1, 12 + floor * 5, 6]);
+                windowGrid.push([9.1, 12 + floor * 5, 6]);
+                windowGrid.push([-9.1, 12 + floor * 5, -6]);
+                windowGrid.push([9.1, 12 + floor * 5, -6]);
+            }
+            
+            // Tower windows
+            towerPositions.forEach(([ox, oz]) => {
+                for (let floor = 0; floor < 10; floor++) {
+                    windowGrid.push([ox, 12 + floor * 5, oz > 0 ? oz + 2.6 : oz - 2.6]);
+                    windowGrid.push([ox > 0 ? ox + 2.6 : ox - 2.6, 12 + floor * 5, oz]);
+                }
+            });
             
             windowGrid.forEach(([wx, wy, wz]) => {
-                const window = createVoxel(1.8, 2.5, 0.2, 0xffdb99, x + wx, wy, z + wz, false, false);
+                const window = createVoxel(1.5, 2.2, 0.2, 0xffdb99, x + wx, wy, z + wz, false, false);
                 scene.add(window);
                 
-                const light = new THREE.PointLight(0xffdb99, 0.8, 15);
+                // Warm glow
+                const light = new THREE.PointLight(0xffdb99, 1.2, 20);
+                light.position.set(x + wx, wy, z + wz);
+                scene.add(light);
+            });
+            
+            // Additional colored windows (green/red accents)
+            const accentWindows = [
+                [0, 35, -9.1, 0x90ee90],
+                [-3, 35, -9.1, 0xff6b6b],
+                [3, 35, -9.1, 0xff6b6b]
+            ];
+            
+            accentWindows.forEach(([wx, wy, wz, color]) => {
+                const window = createVoxel(1.8, 2.5, 0.2, color, x + wx, wy, z + wz, false, false);
+                scene.add(window);
+                
+                const light = new THREE.PointLight(color, 0.8, 15);
                 light.position.set(x + wx, wy, z + wz);
                 scene.add(light);
             });
         }
         
         function createWater() {
+            // Large bay water
             const waterLayers = [
-                {size: 110, color: 0x4a7a8d, opacity: 0.5, y: -0.3},
-                {size: 105, color: 0x5b8fa3, opacity: 0.6, y: 0},
-                {size: 100, color: 0x6b9fb3, opacity: 0.4, y: 0.2}
+                {width: 150, depth: 200, color: 0x4a7a8d, opacity: 0.5, y: -0.3},
+                {width: 145, depth: 195, color: 0x5b8fa3, opacity: 0.6, y: 0},
+                {width: 140, depth: 190, color: 0x6b9fb3, opacity: 0.4, y: 0.2}
             ];
             
             waterLayers.forEach(layer => {
-                const waterGeometry = new THREE.PlaneGeometry(layer.size, layer.size);
+                const waterGeometry = new THREE.PlaneGeometry(layer.width, layer.depth);
                 const waterMaterial = new THREE.MeshLambertMaterial({ 
                     color: layer.color,
                     transparent: true,
@@ -466,15 +577,16 @@
                 });
                 const water = new THREE.Mesh(waterGeometry, waterMaterial);
                 water.rotation.x = -Math.PI / 2;
-                water.position.set(55, layer.y, -50);
+                water.position.set(20, layer.y, -30);
                 water.receiveShadow = true;
                 scene.add(water);
             });
             
-            for (let i = 0; i < 60; i++) {
+            // Water surface details - ripples
+            for (let i = 0; i < 100; i++) {
                 const size = Math.random() * 2 + 0.3;
-                const x = 55 + (Math.random() - 0.5) * 100;
-                const z = -50 + (Math.random() - 0.5) * 100;
+                const x = 20 + (Math.random() - 0.5) * 140;
+                const z = -30 + (Math.random() - 0.5) * 180;
                 const color = Math.random() > 0.5 ? 0x7bafbf : 0x8bbfcf;
                 const ripple = createVoxel(size, 0.08, size, color, x, 0.15, z, false, false);
                 scene.add(ripple);
@@ -483,23 +595,33 @@
         
         function buildWorld() {
             createGround();
-            createCottage(0, 0);
-            createSignpost(8, -5);
-            createAncientOak(25, -30);
             
-            const treePositions = [
-                [10, -10, 1.2], [15, -8, 0.9], [12, -15, 1.1],
-                [20, -20, 1.3], [18, -25, 1.0], [22, -28, 1.1],
-                [30, -35, 0.9], [28, -38, 1.0], [32, -32, 1.2],
-                [26, -40, 1.1], [24, -36, 0.95], [-10, -5, 0.9],
-                [-8, -12, 1.1], [-15, -8, 1.0], [5, 10, 1.0],
-                [8, 15, 0.9], [-5, 8, 1.1], [3, 5, 0.95]
+            // Ship in the bay
+            createShip(0, 5);
+            
+            // A few coastal trees
+            const coastalTrees = [
+                [-35, 25, 1.0], [-30, 30, 0.9], [-40, 28, 1.1],
+                [-25, 35, 0.95], [15, 25, 1.0], [20, 30, 0.9]
             ];
+            coastalTrees.forEach(([x, z, size]) => createDetailedTree(x, z, size));
             
-            treePositions.forEach(([x, z, size]) => createDetailedTree(x, z, size));
+            // Ancient oak on a hill nearby
+            createAncientOak(-45, 40);
             
+            // Distant forest
+            const distantTrees = [
+                [-60, -20, 1.1], [-55, -25, 1.0], [-50, -30, 1.2],
+                [-65, -15, 0.9], [40, -20, 1.0], [45, -25, 0.95],
+                [50, -30, 1.1], [35, -35, 1.0]
+            ];
+            distantTrees.forEach(([x, z, size]) => createDetailedTree(x, z, size));
+            
+            // Bay water
             createWater();
-            createCastle(60, -60);
+            
+            // Castle in the far distance across the bay
+            createCastle(40, -100);
             
             document.getElementById('loading').classList.add('hidden');
         }
@@ -558,16 +680,16 @@
         }
         
         function getLocationName(x, z) {
-            if (Math.abs(x) < 10 && Math.abs(z) < 10) {
-                return "The Coastal Meadows";
-            } else if (x > 15 && x < 35 && z < -20 && z > -40) {
-                return "The Ancient Forest";
-            } else if (x > 40 && z < -40) {
-                return "The Castle Isle";
-            } else if (z > -5) {
-                return "The Northern Wilds";
+            if (Math.abs(x + 20) < 15 && z > 15 && z < 40) {
+                return "The Coastal Bay";
+            } else if (Math.abs(x) < 30 && z > 0 && z < 15) {
+                return "The Ship's Anchor";
+            } else if (x < -30 && z > 20) {
+                return "The Coastal Forest";
+            } else if (z < -50) {
+                return "View to Castle Isle";
             } else {
-                return "Unknown Territory";
+                return "The Shoreline";
             }
         }
         
@@ -623,8 +745,8 @@
                 -Math.sin(player.rotation.y)
             );
             
-            if (keys['w']) player.velocity.add(forward.multiplyScalar(speed));
-            if (keys['s']) player.velocity.add(forward.multiplyScalar(-speed));
+            if (keys['w']) player.velocity.add(forward.multiplyScalar(-speed));
+            if (keys['s']) player.velocity.add(forward.multiplyScalar(speed));
             if (keys['a']) player.velocity.add(right.multiplyScalar(-speed));
             if (keys['d']) player.velocity.add(right.multiplyScalar(speed));
             
