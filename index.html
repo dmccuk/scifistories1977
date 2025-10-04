@@ -3,527 +3,691 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SciFiStories1977</title>
+    <title>Project Shadowglass - Interactive World</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        :root {
-            --primary: #00f0ff;
-            --secondary: #6366f1;
-            --accent: #8b5cf6;
-            --dark: #0a0a0f;
-            --dark-light: #1a1a2e;
-            --text: #e0e0e0;
-            --text-dim: #a0a0b0;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            overflow-x: hidden;
-            line-height: 1.6;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
         }
-
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at top, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
-                radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
-            z-index: 0;
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
         }
-
-        .grain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.03;
-            z-index: 1;
-            pointer-events: none;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
-
-        .content {
-            position: relative;
-            z-index: 10;
-        }
-
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            backdrop-filter: blur(20px);
-            background: rgba(10, 10, 15, 0.8);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-        }
-
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .nav-logo {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            color: var(--primary);
-        }
-
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        header {
-            padding: 180px 40px 120px;
-            text-align: center;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 5rem;
-            font-weight: 700;
-            letter-spacing: -3px;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.1;
-        }
-
-        .subtitle {
-            font-size: 1.25rem;
-            color: var(--text-dim);
-            font-weight: 300;
-            letter-spacing: 0.5px;
-            max-width: 600px;
-            margin: 0 auto 40px;
-        }
-
-        .cta-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 32px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: var(--primary);
-            text-decoration: none;
+        
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
             border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
+            font-size: 14px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
         }
-
-        .cta-button:hover {
-            background: rgba(99, 102, 241, 0.15);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        main {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 40px 100px;
-        }
-
-        section {
-            margin-bottom: 120px;
-        }
-
-        .section-header {
-            margin-bottom: 48px;
-        }
-
-        h2 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 600;
-            letter-spacing: -1px;
-            margin-bottom: 12px;
-            color: var(--text);
-        }
-
-        .section-description {
-            font-size: 1.1rem;
-            color: var(--text-dim);
-            font-weight: 300;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 32px;
-        }
-
-        .card {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.5) 0%, rgba(20, 20, 35, 0.5) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.15);
-            border-radius: 16px;
-            padding: 40px;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
+        
+        #controls {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1) 0%, transparent 60%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
         }
-
-        .card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(99, 102, 241, 0.4);
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+        
+        #location {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
         }
-
-        .card:hover::before {
-            opacity: 1;
+        
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #64ffda;
         }
-
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            display: block;
-            opacity: 0.9;
+        
+        .key {
+            color: #64ffda;
+            font-weight: bold;
         }
-
-        .card-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--text);
-            letter-spacing: -0.5px;
-        }
-
-        .card-description {
-            font-size: 1rem;
-            color: var(--text-dim);
-            font-weight: 300;
-            line-height: 1.7;
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-
-        .project-card {
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.4) 0%, rgba(20, 20, 35, 0.4) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.1);
-            border-radius: 12px;
-            padding: 32px;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .project-card:hover {
-            border-color: rgba(99, 102, 241, 0.3);
-            transform: translateY(-4px);
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
-        }
-
-        .project-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        .project-description {
-            font-size: 0.95rem;
-            color: var(--text-dim);
-            font-weight: 300;
-        }
-
-        .project-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9rem;
-            color: var(--secondary);
-            margin-top: auto;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-        }
-
-        .project-card:hover .project-link {
-            opacity: 1;
-        }
-
-        footer {
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
             text-align: center;
-            padding: 80px 40px;
-            border-top: 1px solid rgba(99, 102, 241, 0.1);
-            color: var(--text-dim);
-            font-size: 0.9rem;
         }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 32px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-
-        .footer-link {
-            color: var(--text-dim);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        .footer-link:hover {
-            color: var(--primary);
-        }
-
-        .video-container {
-            position: relative;
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            padding-bottom: 50.625%;
-            height: 0;
-            overflow: hidden;
-            border-radius: 16px;
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.5) 0%, rgba(20, 20, 35, 0.5) 100%);
-        }
-
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-        }
-
-        @media (max-width: 1024px) {
-            h1 {
-                font-size: 3.5rem;
-            }
-
-            h2 {
-                font-size: 2rem;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .projects-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-container {
-                padding: 16px 20px;
-            }
-
-            header {
-                padding: 140px 20px 80px;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-                letter-spacing: -1.5px;
-            }
-
-            .subtitle {
-                font-size: 1rem;
-            }
-
-            main {
-                padding: 0 20px 60px;
-            }
-
-            section {
-                margin-bottom: 80px;
-            }
-
-            .card {
-                padding: 32px 24px;
-            }
-
-            .project-card {
-                padding: 24px 20px;
-            }
+        
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="grain"></div>
-
-    <nav>
-        <div class="nav-container">
-            <div class="nav-logo">SciFiStories1977</div>
-            <div class="nav-status">
-                <span class="status-dot"></span>
-                <span>Online</span>
-            </div>
-        </div>
-    </nav>
-
-    <div class="content">
-        <header>
-            <h1>SciFiStories1977</h1>
-            <p class="subtitle">Exploring the intersection of science fiction storytelling, interactive experiences, and digital creativity</p>
-            <a href="https://www.youtube.com/@scifistories1977" class="cta-button" target="_blank" rel="noopener">
-                <span>Watch on YouTube</span>
-                <span>→</span>
-            </a>
-        </header>
-
-        <main>
-            <section>
-                <div class="section-header">
-                    <h2>Latest Video</h2>
-                    <p class="section-description">Watch the most recent story from the channel</p>
-                </div>
-                <div class="video-container">
-                    <iframe 
-                        src="https://www.youtube.com/embed?listType=user_uploads&list=scifistories1977&maxResults=1" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
-            </section>
-
-            <section>
-                <div class="section-header">
-                    <h2>Connect</h2>
-                    <p class="section-description">Follow along across platforms for stories, updates, and community discussions</p>
-                </div>
-                <div class="grid">
-                    <a href="https://www.youtube.com/@scifistories1977" class="card" target="_blank" rel="noopener">
-                        <span class="card-icon">📺</span>
-                        <h3 class="card-title">YouTube</h3>
-                        <p class="card-description">Watch original sci-fi stories, narratives, and visual content exploring futuristic themes and concepts</p>
-                    </a>
-
-                    <a href="https://www.patreon.com/c/scifistories1977" class="card" target="_blank" rel="noopener">
-                        <span class="card-icon">🎯</span>
-                        <h3 class="card-title">Patreon</h3>
-                        <p class="card-description">Support the work and get exclusive access to premium content, early releases, and behind-the-scenes material</p>
-                    </a>
-
-                    <a href="https://www.reddit.com/user/SciFiStories1977/" class="card" target="_blank" rel="noopener">
-                        <span class="card-icon">💬</span>
-                        <h3 class="card-title">Reddit</h3>
-                        <p class="card-description">Join discussions with the community, share thoughts, and engage in conversations about sci-fi topics</p>
-                    </a>
-
-                    <a href="https://twitter.com/scifistories1977" class="card" target="_blank" rel="noopener">
-                        <span class="card-icon">🐦</span>
-                        <h3 class="card-title">Twitter</h3>
-                        <p class="card-description">Get quick updates, thoughts, and real-time engagement with the latest sci-fi ideas and projects</p>
-                    </a>
-                </div>
-            </section>
-
-            <section>
-                <div class="section-header">
-                    <h2>Projects</h2>
-                    <p class="section-description">Interactive experiences and creative endeavors</p>
-                </div>
-                <div class="projects-grid">
-                    <a href="https://seekr.run" class="project-card" target="_blank" rel="noopener">
-                        <h3 class="project-title">Seekr.Run</h3>
-                        <p class="project-description">Interactive digital experience platform</p>
-                        <span class="project-link">Visit site →</span>
-                    </a>
-
-                    <a href="https://wargames1980s.online" class="project-card" target="_blank" rel="noopener">
-                        <h3 class="project-title">WarGames1980s</h3>
-                        <p class="project-description">Classic 1980s simulation experience</p>
-                        <span class="project-link">Visit site →</span>
-                    </a>
-
-                    <a href="#" class="project-card">
-                        <h3 class="project-title">Skirmish</h3>
-                        <p class="project-description">Command & Conquer inspired strategy game</p>
-                        <span class="project-link">Coming soon →</span>
-                    </a>
-
-                    <a href="#" class="project-card">
-                        <h3 class="project-title">Apparel</h3>
-                        <p class="project-description">Exclusive merchandise and designs</p>
-                        <span class="project-link">Shop now →</span>
-                    </a>
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <div class="footer-links">
-                <a href="https://www.youtube.com/@scifistories1977" class="footer-link" target="_blank" rel="noopener">YouTube</a>
-                <a href="https://www.patreon.com/c/scifistories1977" class="footer-link" target="_blank" rel="noopener">Patreon</a>
-                <a href="https://www.reddit.com/user/SciFiStories1977/" class="footer-link" target="_blank" rel="noopener">Reddit</a>
-                <a href="https://twitter.com/scifistories1977" class="footer-link" target="_blank" rel="noopener">Twitter</a>
-            </div>
-            <p>© 2025 SciFiStories1977. All rights reserved.</p>
-        </footer>
+    <div id="loading">
+        <div class="title">PROJECT SHADOWGLASS</div>
+        <div style="margin-top: 20px;">Loading world...</div>
     </div>
+    
+    <div id="canvas-container"></div>
+    
+    <div id="info">
+        <div class="title">PROJECT SHADOWGLASS</div>
+        <div>Explore a non-linear fantasy world</div>
+        <div style="margin-top: 10px; font-size: 11px; opacity: 0.8;">
+            Click to start, then use controls to explore
+        </div>
+    </div>
+    
+    <div id="controls">
+        <div><span class="key">WASD</span> - Move</div>
+        <div><span class="key">Mouse</span> - Look around</div>
+        <div><span class="key">Space</span> - Jump</div>
+        <div><span class="key">Shift</span> - Sprint</div>
+        <div><span class="key">T</span> - Toggle time</div>
+        <div><span class="key">C</span> - Change camera view</div>
+    </div>
+    
+    <div id="location">
+        <div class="title">Location</div>
+        <div id="location-name">The Coastal Meadows</div>
+        <div id="coordinates" style="font-size: 10px; opacity: 0.7; margin-top: 5px;"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        scene.fog = new THREE.FogExp2(0x9db4c0, 0.012);
+        
+        let player = {
+            position: new THREE.Vector3(0, 5, 0),
+            velocity: new THREE.Vector3(0, 0, 0),
+            rotation: { x: 0, y: 0 },
+            speed: 0.15,
+            sprintMultiplier: 2,
+            jumpForce: 0.3,
+            onGround: false,
+            height: 2
+        };
+        
+        camera.position.copy(player.position);
+        
+        const keys = {};
+        let mouseMovement = { x: 0, y: 0 };
+        let pointerLocked = false;
+        let cameraMode = 0;
+        
+        let timeOfDay = 0.7;
+        let timeSpeed = 0.00005;
+        let autoTimeProgress = true;
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffd9a0, 0.6);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.left = -150;
+        directionalLight.shadow.camera.right = 150;
+        directionalLight.shadow.camera.top = 150;
+        directionalLight.shadow.camera.bottom = -150;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+        
+        function createVoxel(width, height, depth, color, x, y, z, receiveShadow = true, castShadow = true) {
+            const geometry = new THREE.BoxGeometry(width, height, depth);
+            const material = new THREE.MeshLambertMaterial({ 
+                color: color
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, y, z);
+            mesh.receiveShadow = receiveShadow;
+            mesh.castShadow = castShadow;
+            return mesh;
+        }
+        
+        function createGround() {
+            const groundSize = 200;
+            const baseGround = createVoxel(groundSize, 1, groundSize, 0x3d5a42, 0, -0.5, 0, true, false);
+            scene.add(baseGround);
+            
+            const topGround = createVoxel(groundSize, 0.5, groundSize, 0x4a6b52, 0, 0.25, 0, true, false);
+            scene.add(topGround);
+            
+            const grassColors = [0x4a7c59, 0x5a8c69, 0x4d7a5c, 0x567f62];
+            for (let i = 0; i < 200; i++) {
+                const size = Math.random() * 1.5 + 0.5;
+                const x = (Math.random() - 0.5) * groundSize * 0.9;
+                const z = (Math.random() - 0.5) * groundSize * 0.9;
+                const color = grassColors[Math.floor(Math.random() * grassColors.length)];
+                const grassPatch = createVoxel(size, 0.3, size, color, x, 0.4, z);
+                scene.add(grassPatch);
+            }
+            
+            for (let i = 0; i < 150; i++) {
+                const size = Math.random() * 0.3 + 0.1;
+                const x = (Math.random() - 0.5) * groundSize * 0.9;
+                const z = (Math.random() - 0.5) * groundSize * 0.9;
+                const detail = createVoxel(size, 0.8, size, 0x5a9c79, x, 0.6, z);
+                scene.add(detail);
+            }
+            
+            const pathPoints = [
+                [0, 0], [3, -2], [6, -3], [10, -5], [14, -8], 
+                [18, -11], [22, -15], [26, -19], [29, -23], [31, -27]
+            ];
+            
+            const pathColors = [0x8b7355, 0x7b6345, 0x9b8365, 0x6b5335];
+            const stainColors = [0x6d4c41, 0x5d3c31, 0x7d5c51, 0x4d2c21];
+            
+            for (let i = 0; i < pathPoints.length - 1; i++) {
+                const [x1, z1] = pathPoints[i];
+                const [x2, z2] = pathPoints[i + 1];
+                const segments = 8;
+                
+                for (let j = 0; j <= segments; j++) {
+                    const t = j / segments;
+                    const x = x1 + (x2 - x1) * t;
+                    const z = z1 + (z2 - z1) * t;
+                    
+                    for (let k = 0; k < 3; k++) {
+                        const offset = (Math.random() - 0.5) * 1.5;
+                        const width = 2.5 + Math.random() * 0.8;
+                        const color = pathColors[Math.floor(Math.random() * pathColors.length)];
+                        const path = createVoxel(width, 0.2, width, color, x + offset, 0.15, z + offset);
+                        scene.add(path);
+                    }
+                    
+                    if (Math.random() > 0.6) {
+                        for (let s = 0; s < 2; s++) {
+                            const stainSize = Math.random() * 1.2 + 0.5;
+                            const stainColor = stainColors[Math.floor(Math.random() * stainColors.length)];
+                            const stain = createVoxel(
+                                stainSize, 0.15, stainSize, 
+                                stainColor, 
+                                x + (Math.random() - 0.5) * 2, 0.2, 
+                                z + (Math.random() - 0.5) * 2
+                            );
+                            scene.add(stain);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function createDetailedTree(x, z, size = 1) {
+            const trunkHeight = 3.5 * size;
+            const trunkWidth = 0.7 * size;
+            
+            const trunkColors = [0x4a3728, 0x3a2718, 0x5a4738];
+            for (let i = 0; i < 4; i++) {
+                const segHeight = trunkHeight / 4;
+                const color = trunkColors[i % trunkColors.length];
+                const trunk = createVoxel(
+                    trunkWidth, segHeight, trunkWidth, 
+                    color, 
+                    x, segHeight/2 + i * segHeight, z
+                );
+                scene.add(trunk);
+            }
+            
+            const foliageColors = [0x1d4010, 0x2d5016, 0x1f4812, 0x3d6b1f, 0x254a14];
+            const layers = 5;
+            const blocksPerLayer = 25;
+            
+            for (let layer = 0; layer < layers; layer++) {
+                const layerRadius = (4 - layer * 0.5) * size;
+                const layerHeight = trunkHeight + layer * 1.2 * size;
+                
+                for (let b = 0; b < blocksPerLayer; b++) {
+                    const angle = (b / blocksPerLayer) * Math.PI * 2;
+                    const radius = Math.random() * layerRadius;
+                    const bx = x + Math.cos(angle) * radius;
+                    const bz = z + Math.sin(angle) * radius;
+                    const by = layerHeight + (Math.random() - 0.5) * 1.5;
+                    
+                    const blockSize = Math.random() * 0.8 + 0.4;
+                    const color = foliageColors[Math.floor(Math.random() * foliageColors.length)];
+                    
+                    const foliage = createVoxel(blockSize, blockSize, blockSize, color, bx, by, bz);
+                    scene.add(foliage);
+                }
+                
+                const coreSize = layerRadius * 0.7;
+                const coreColor = foliageColors[layer % foliageColors.length];
+                const core = createVoxel(coreSize, 2, coreSize, coreColor, x, layerHeight, z);
+                scene.add(core);
+            }
+        }
+        
+        function createAncientOak(x, z) {
+            const trunkHeight = 9;
+            const trunkWidth = 2.8;
+            
+            const trunkColors = [0x3a2718, 0x2a1708, 0x4a3728, 0x3a2720];
+            for (let i = 0; i < 6; i++) {
+                const segHeight = trunkHeight / 6;
+                const widthVar = trunkWidth + Math.sin(i) * 0.3;
+                const color = trunkColors[i % trunkColors.length];
+                const trunk = createVoxel(
+                    widthVar, segHeight, widthVar, 
+                    color, 
+                    x, segHeight/2 + i * segHeight, z
+                );
+                scene.add(trunk);
+            }
+            
+            const foliageColors = [0x0d3000, 0x1d4010, 0x2d5016, 0x1a3d0e, 0x254518];
+            const canopyLayers = 7;
+            const blocksPerLayer = 45;
+            
+            for (let layer = 0; layer < canopyLayers; layer++) {
+                const layerRadius = (14 - layer * 1.5);
+                const layerHeight = trunkHeight + layer * 1.8;
+                
+                for (let b = 0; b < blocksPerLayer; b++) {
+                    const angle = (b / blocksPerLayer) * Math.PI * 2 + layer * 0.5;
+                    const radius = Math.random() * layerRadius;
+                    const bx = x + Math.cos(angle) * radius;
+                    const bz = z + Math.sin(angle) * radius;
+                    const by = layerHeight + (Math.random() - 0.5) * 2;
+                    
+                    const blockSize = Math.random() * 1.2 + 0.5;
+                    const color = foliageColors[Math.floor(Math.random() * foliageColors.length)];
+                    
+                    const foliage = createVoxel(blockSize, blockSize, blockSize, color, bx, by, bz);
+                    scene.add(foliage);
+                }
+                
+                const coreSize = layerRadius * 0.6;
+                const core = createVoxel(coreSize, 3, coreSize, foliageColors[1], x, layerHeight, z);
+                scene.add(core);
+            }
+            
+            const platformCount = 8;
+            for (let i = 0; i < platformCount; i++) {
+                const angle = (i / platformCount) * Math.PI * 3;
+                const radius = 3.5;
+                const px = x + Math.cos(angle) * radius;
+                const pz = z + Math.sin(angle) * radius;
+                const py = 2 + i * 1.3;
+                
+                const platform = createVoxel(2.5, 0.4, 2.5, 0x8b7355, px, py, pz);
+                scene.add(platform);
+            }
+        }
+        
+        function createCottage(x, z) {
+            const wallColors = [0x8b6f47, 0x7b5f37, 0x9b7f57];
+            
+            for (let i = 0; i < 3; i++) {
+                const base = createVoxel(6, 1, 5, wallColors[i % 3], x, 0.5 + i, z);
+                scene.add(base);
+            }
+            
+            const roofColors = [0x6d4c3b, 0x5d3c2b, 0x7d5c4b];
+            for (let i = 0; i < 3; i++) {
+                const width = 7 - i * 0.5;
+                const depth = 6 - i * 0.5;
+                const roof = createVoxel(width, 0.5, depth, roofColors[i], x, 3.5 + i * 0.5, z);
+                scene.add(roof);
+            }
+            
+            const door = createVoxel(1.2, 2, 0.2, 0x4a3728, x, 1.5, z - 2.6);
+            scene.add(door);
+            
+            const windowPositions = [[-2, 2, -2.5], [2, 2, -2.5]];
+            windowPositions.forEach(([wx, wy, wz]) => {
+                const window = createVoxel(1, 1, 0.15, 0x6ba3d4, x + wx, wy, z + wz, false, false);
+                scene.add(window);
+                
+                const light = new THREE.PointLight(0xffdb99, 0.6, 12);
+                light.position.set(x + wx, wy, z + wz);
+                scene.add(light);
+            });
+        }
+        
+        function createSignpost(x, z) {
+            const post = createVoxel(0.4, 3.5, 0.4, 0x4a3728, x, 1.75, z);
+            scene.add(post);
+            
+            const sign = createVoxel(2.5, 0.9, 0.25, 0x8b6f47, x, 2.8, z);
+            scene.add(sign);
+        }
+        
+        function createCastle(x, z) {
+            const foundationLayers = [
+                {size: 24, height: 2, color: 0x5a4e3f, y: 1},
+                {size: 22, height: 1.5, color: 0x6a5e4f, y: 2.5},
+                {size: 20, height: 1, color: 0x7a6e5f, y: 3.5}
+            ];
+            
+            foundationLayers.forEach(layer => {
+                const base = createVoxel(layer.size, layer.height, layer.size, layer.color, x, layer.y, z);
+                scene.add(base);
+            });
+            
+            for (let i = 0; i < 12; i++) {
+                const keepColor = i % 2 === 0 ? 0x7a6e5f : 0x6a5e4f;
+                const keep = createVoxel(16, 2.5, 16, keepColor, x, 5 + i * 2.5, z);
+                scene.add(keep);
+            }
+            
+            const towerPositions = [[-7, -7], [7, -7], [-7, 7], [7, 7]];
+            towerPositions.forEach(([ox, oz]) => {
+                for (let i = 0; i < 15; i++) {
+                    const towerColor = i % 2 === 0 ? 0x8a7e6f : 0x7a6e5f;
+                    const tower = createVoxel(4.5, 2.5, 4.5, towerColor, x + ox, 5 + i * 2.5, z + oz);
+                    scene.add(tower);
+                }
+                
+                const top = createVoxel(5.5, 2, 5.5, 0x6a5e4f, x + ox, 42, z + oz);
+                scene.add(top);
+                
+                for (let s = 0; s < 3; s++) {
+                    const spireSize = 1.2 - s * 0.3;
+                    const spire = createVoxel(spireSize, 1.5, spireSize, 0x9a8e7f, x + ox, 44 + s * 1.5, z + oz);
+                    scene.add(spire);
+                }
+            });
+            
+            for (let i = 0; i < 8; i++) {
+                const spireSize = 2.5 - i * 0.2;
+                const mainSpire = createVoxel(spireSize, 2, spireSize, 0x8a7e6f, x, 36 + i * 2, z);
+                scene.add(mainSpire);
+            }
+            
+            const crossV = createVoxel(0.6, 4, 0.6, 0x6a5e4f, x, 54, z);
+            const crossH = createVoxel(2.5, 0.6, 0.6, 0x6a5e4f, x, 53, z);
+            scene.add(crossV);
+            scene.add(crossH);
+            
+            const windowGrid = [
+                [-6, 15, -8.1], [0, 15, -8.1], [6, 15, -8.1],
+                [-6, 20, -8.1], [0, 20, -8.1], [6, 20, -8.1],
+                [-6, 25, -8.1], [0, 25, -8.1], [6, 25, -8.1],
+                [-8.1, 15, 0], [-8.1, 20, 0], [8.1, 15, 0], [8.1, 20, 0]
+            ];
+            
+            windowGrid.forEach(([wx, wy, wz]) => {
+                const window = createVoxel(1.8, 2.5, 0.2, 0xffdb99, x + wx, wy, z + wz, false, false);
+                scene.add(window);
+                
+                const light = new THREE.PointLight(0xffdb99, 0.8, 15);
+                light.position.set(x + wx, wy, z + wz);
+                scene.add(light);
+            });
+        }
+        
+        function createWater() {
+            const waterLayers = [
+                {size: 110, color: 0x4a7a8d, opacity: 0.5, y: -0.3},
+                {size: 105, color: 0x5b8fa3, opacity: 0.6, y: 0},
+                {size: 100, color: 0x6b9fb3, opacity: 0.4, y: 0.2}
+            ];
+            
+            waterLayers.forEach(layer => {
+                const waterGeometry = new THREE.PlaneGeometry(layer.size, layer.size);
+                const waterMaterial = new THREE.MeshLambertMaterial({ 
+                    color: layer.color,
+                    transparent: true,
+                    opacity: layer.opacity
+                });
+                const water = new THREE.Mesh(waterGeometry, waterMaterial);
+                water.rotation.x = -Math.PI / 2;
+                water.position.set(55, layer.y, -50);
+                water.receiveShadow = true;
+                scene.add(water);
+            });
+            
+            for (let i = 0; i < 60; i++) {
+                const size = Math.random() * 2 + 0.3;
+                const x = 55 + (Math.random() - 0.5) * 100;
+                const z = -50 + (Math.random() - 0.5) * 100;
+                const color = Math.random() > 0.5 ? 0x7bafbf : 0x8bbfcf;
+                const ripple = createVoxel(size, 0.08, size, color, x, 0.15, z, false, false);
+                scene.add(ripple);
+            }
+        }
+        
+        function buildWorld() {
+            createGround();
+            createCottage(0, 0);
+            createSignpost(8, -5);
+            createAncientOak(25, -30);
+            
+            const treePositions = [
+                [10, -10, 1.2], [15, -8, 0.9], [12, -15, 1.1],
+                [20, -20, 1.3], [18, -25, 1.0], [22, -28, 1.1],
+                [30, -35, 0.9], [28, -38, 1.0], [32, -32, 1.2],
+                [26, -40, 1.1], [24, -36, 0.95], [-10, -5, 0.9],
+                [-8, -12, 1.1], [-15, -8, 1.0], [5, 10, 1.0],
+                [8, 15, 0.9], [-5, 8, 1.1], [3, 5, 0.95]
+            ];
+            
+            treePositions.forEach(([x, z, size]) => createDetailedTree(x, z, size));
+            
+            createWater();
+            createCastle(60, -60);
+            
+            document.getElementById('loading').classList.add('hidden');
+        }
+        
+        function updateSkyColor() {
+            let skyColor, fogColor, sunColor;
+            
+            if (timeOfDay < 0.25) {
+                const t = timeOfDay / 0.25;
+                skyColor = lerpColor(0x1a1a2e, 0x4a5d7c, t);
+                fogColor = lerpColor(0x2a2a3e, 0x6a7d9c, t);
+                sunColor = 0x6a7a9c;
+            } else if (timeOfDay < 0.5) {
+                const t = (timeOfDay - 0.25) / 0.25;
+                skyColor = lerpColor(0x4a5d7c, 0x87ceeb, t);
+                fogColor = lerpColor(0x6a7d9c, 0x9db4c0, t);
+                sunColor = lerpColor(0x6a7a9c, 0xffd9a0, t);
+            } else if (timeOfDay < 0.75) {
+                const t = (timeOfDay - 0.5) / 0.25;
+                skyColor = lerpColor(0x87ceeb, 0x7d5a8c, t);
+                fogColor = lerpColor(0x9db4c0, 0x8d7a9c, t);
+                sunColor = lerpColor(0xffd9a0, 0xff9a80, t);
+            } else {
+                const t = (timeOfDay - 0.75) / 0.25;
+                skyColor = lerpColor(0x7d5a8c, 0x1a1a2e, t);
+                fogColor = lerpColor(0x8d7a9c, 0x2a2a3e, t);
+                sunColor = 0x4a5a7c;
+            }
+            
+            scene.background = new THREE.Color(skyColor);
+            scene.fog.color.setHex(fogColor);
+            directionalLight.color.setHex(sunColor);
+            
+            const sunAngle = timeOfDay * Math.PI * 2;
+            directionalLight.position.set(
+                Math.cos(sunAngle) * 50,
+                Math.sin(sunAngle) * 50,
+                30
+            );
+        }
+        
+        function lerpColor(color1, color2, t) {
+            const r1 = (color1 >> 16) & 0xff;
+            const g1 = (color1 >> 8) & 0xff;
+            const b1 = color1 & 0xff;
+            
+            const r2 = (color2 >> 16) & 0xff;
+            const g2 = (color2 >> 8) & 0xff;
+            const b2 = color2 & 0xff;
+            
+            const r = Math.round(r1 + (r2 - r1) * t);
+            const g = Math.round(g1 + (g2 - g1) * t);
+            const b = Math.round(b1 + (b2 - b1) * t);
+            
+            return (r << 16) | (g << 8) | b;
+        }
+        
+        function getLocationName(x, z) {
+            if (Math.abs(x) < 10 && Math.abs(z) < 10) {
+                return "The Coastal Meadows";
+            } else if (x > 15 && x < 35 && z < -20 && z > -40) {
+                return "The Ancient Forest";
+            } else if (x > 40 && z < -40) {
+                return "The Castle Isle";
+            } else if (z > -5) {
+                return "The Northern Wilds";
+            } else {
+                return "Unknown Territory";
+            }
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            
+            if (e.key.toLowerCase() === 't') {
+                autoTimeProgress = !autoTimeProgress;
+            }
+            
+            if (e.key.toLowerCase() === 'c') {
+                cameraMode = (cameraMode + 1) % 2;
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        document.addEventListener('click', () => {
+            if (!pointerLocked) {
+                renderer.domElement.requestPointerLock();
+            }
+        });
+        
+        document.addEventListener('pointerlockchange', () => {
+            pointerLocked = document.pointerLockElement === renderer.domElement;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (pointerLocked) {
+                mouseMovement.x += e.movementX;
+                mouseMovement.y += e.movementY;
+            }
+        });
+        
+        function updatePlayer() {
+            player.rotation.y -= mouseMovement.x * 0.002;
+            player.rotation.x -= mouseMovement.y * 0.002;
+            player.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, player.rotation.x));
+            mouseMovement.x = 0;
+            mouseMovement.y = 0;
+            
+            const speed = keys['shift'] ? player.speed * player.sprintMultiplier : player.speed;
+            const forward = new THREE.Vector3(
+                Math.sin(player.rotation.y),
+                0,
+                Math.cos(player.rotation.y)
+            );
+            const right = new THREE.Vector3(
+                Math.cos(player.rotation.y),
+                0,
+                -Math.sin(player.rotation.y)
+            );
+            
+            if (keys['w']) player.velocity.add(forward.multiplyScalar(speed));
+            if (keys['s']) player.velocity.add(forward.multiplyScalar(-speed));
+            if (keys['a']) player.velocity.add(right.multiplyScalar(-speed));
+            if (keys['d']) player.velocity.add(right.multiplyScalar(speed));
+            
+            if (keys[' '] && player.onGround) {
+                player.velocity.y = player.jumpForce;
+                player.onGround = false;
+            }
+            
+            player.velocity.y -= 0.015;
+            player.position.add(player.velocity);
+            
+            if (player.position.y <= player.height) {
+                player.position.y = player.height;
+                player.velocity.y = 0;
+                player.onGround = true;
+            }
+            
+            player.velocity.x *= 0.8;
+            player.velocity.z *= 0.8;
+            
+            if (cameraMode === 0) {
+                camera.position.copy(player.position);
+                camera.rotation.x = player.rotation.x;
+                camera.rotation.y = player.rotation.y;
+            } else {
+                const distance = 8;
+                const offset = new THREE.Vector3(
+                    Math.sin(player.rotation.y) * distance,
+                    3,
+                    Math.cos(player.rotation.y) * distance
+                );
+                camera.position.copy(player.position).sub(offset);
+                camera.lookAt(player.position);
+            }
+            
+            const locationName = getLocationName(player.position.x, player.position.z);
+            document.getElementById('location-name').textContent = locationName;
+            document.getElementById('coordinates').textContent = 
+                `X: ${player.position.x.toFixed(1)} Z: ${player.position.z.toFixed(1)}`;
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            updatePlayer();
+            
+            if (autoTimeProgress) {
+                timeOfDay = (timeOfDay + timeSpeed) % 1;
+            }
+            updateSkyColor();
+            
+            renderer.render(scene, camera);
+        }
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        buildWorld();
+        updateSkyColor();
+        animate();
+    </script>
 </body>
 </html>
